@@ -21,18 +21,25 @@ const wrapper = async () => {
     if (!validator.isURL(argument)) {
       throw new Error('The provided argument was not an URL.')
     }
-    console.log(argument)
+
     // Create a new scarper and scrape the links on starting page.
     const scraper = new Scraper()
     const links = await scraper.findLinksFromPage(argument)
     console.log('Scraping links...OK')
-    console.log(links)
 
+    // Create a calendar to check for available days.
     const calendar = new Calendar()
     const availableDays = await calendar.checkForDays(links[0])
-    // console.log(availableDays)
+
+    if (availableDays.length < 1) {
+      throw new Error('Sorry, there were no possible days for this week.')
+    }
+    console.log('Scraping available days...OK')
+
+    // Check movies.
 
     console.log('\nSuggestions\n===========')
+    console.log(availableDays)
   } catch (err) {
     console.error(err)
   }
