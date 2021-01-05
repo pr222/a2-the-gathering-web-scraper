@@ -30,7 +30,7 @@ const wrapper = async () => {
 
     const calendar = new Calendar()
     const availableDays = await calendar.checkForDays(links[0])
-    console.log(availableDays)
+    // console.log(availableDays)
 
     console.log('\nSuggestions\n===========')
   } catch (err) {

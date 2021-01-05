@@ -5,6 +5,8 @@
  * @version 1.0.0
  */
 import { Scraper } from './scraper.js'
+import jsdom from 'jsdom'
+const { JSDOM } = jsdom
 
 /**
  * Calendar for available days.
@@ -19,8 +21,7 @@ export class Calendar {
  * @param {string} url - the page with all persons' calendars.
  * @memberof Calendar
  */
-  constructor (url) {
-    this.allCalendarsPage = url
+  constructor () {
     this.availableDays = []
   }
 
@@ -47,6 +48,27 @@ export class Calendar {
     realtivePath.forEach(element => {
       fullPathLinks.push(`${link}${element}`)
     })
+    console.log(fullPathLinks)
+    const potentialDays = [0, 0, 0]
+
+    for (const index in fullPathLinks) {
+      const page = await scraper.getPageText(fullPathLinks[index])
+      // Convert plain text to a workable DOM.
+      const dom = new JSDOM(page)
+
+      const options = Array.from(dom.window.document.querySelectorAll('td'), option => option.textContent)
+
+      console.log(options)
+
+      for (const index in options) {
+        if (options[index].match(/ok/i)) {
+          potentialDays[index] += 1
+          console.log('Match!' + index + ' ' + options[index])
+        }
+      }
+
+      console.log(potentialDays)
+    }
 
     return fullPathLinks
   }
