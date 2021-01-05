@@ -30,6 +30,8 @@
     "extends": "@lnu"
   },
   "dependencies": {
+    "jsdom": "^16.4.0",
+    "node-fetch": "^2.6.1",
     "validator": "^13.5.2"
   }
 }
