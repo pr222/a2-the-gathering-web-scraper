@@ -28,5 +28,8 @@
   },
   "eslintConfig": {
     "extends": "@lnu"
+  },
+  "dependencies": {
+    "validator": "^13.5.2"
   }
 }
