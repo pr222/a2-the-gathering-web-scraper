@@ -6,6 +6,7 @@
  */
 import validator from 'validator'
 import { Scraper } from './scraper.js'
+import { Calendar } from './calendar.js'
 
 /**
  * Wrapper for running the main application asyncronously.
@@ -21,12 +22,17 @@ const wrapper = async () => {
       throw new Error('The provided argument was not an URL.')
     }
     console.log(argument)
+    // Create a new scarper and scrape the links on starting page.
     const scraper = new Scraper()
     const links = await scraper.findLinksFromPage(argument)
-    console.log(links[0])
-    console.log(links[1])
-    console.log(links[2])
-    console.log('The app ran to completion.')
+    console.log('Scraping links...OK')
+    console.log(links)
+
+    const calendar = new Calendar()
+    const availableDays = await calendar.checkForDays(links[0])
+    console.log(availableDays)
+
+    console.log('\nSuggestions\n===========')
   } catch (err) {
     console.error(err)
   }

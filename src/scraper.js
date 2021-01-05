@@ -25,13 +25,13 @@ export class Scraper {
    */
   async findLinksFromPage (url) {
     // Fetch url to get the content.
-    const text = await this._getPageText(url)
+    const text = await this.getPageText(url)
 
     // Convert plain text to a workable DOM.
     const dom = new JSDOM(text)
 
     // Create node list with all http and https links.
-    const foundLinks = dom.window.document.querySelectorAll('a[href^="http"], a[href^="https"]')
+    const foundLinks = dom.window.document.querySelectorAll('a[href], a[href]')
 
     const links = []
 
@@ -49,7 +49,7 @@ export class Scraper {
    * @returns {string} - The text.
    * @memberof Scraper
    */
-  async _getPageText (url) {
+  async getPageText (url) {
     // Fetch the requested url.
     const response = await fetch(url)
     // Convert the response to plain text.
