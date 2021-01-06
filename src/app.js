@@ -36,11 +36,10 @@ const wrapper = async () => {
     // Check movies.
     const movies = new Movies()
     const movieSuggestions = await movies.findMovies(links[1], availableDays)
-    // console.log(movieSuggestions)
-    // console.log('Scraping showtimes...OK')
+    console.log('Scraping showtimes...OK')
 
     console.log('\nSuggestions\n===========')
-    console.log('')
+    console.log(movieSuggestions)
   } catch (err) {
     console.error(err)
   }

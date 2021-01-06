@@ -171,16 +171,18 @@ export class Movies {
    * @memberof Movies
    */
   _addTitle (allMovies, movies) {
-    const complementeMovies = movies
+    const completeMovies = movies
 
     // Go through suggested movies.
-    for (const movie of complementeMovies) {
+    for (const movie of completeMovies) {
       // Go through list of all movies and add title when matched.
       for (const title of allMovies) {
-        movie.title = title.movieTitle
+        if (title.requestMovieId === movie.movie) {
+          movie.title = title.movieTitle
+        }
       }
     }
 
-    return complementeMovies
+    return completeMovies
   }
 }
