@@ -7,6 +7,7 @@
 import validator from 'validator'
 import { Scraper } from './scraper.js'
 import { Calendar } from './calendar.js'
+import { Movies } from './movies.js'
 
 /**
  * Wrapper for running the main application asyncronously.
@@ -33,6 +34,9 @@ const wrapper = async () => {
     console.log('Scraping available days...OK')
 
     // Check movies.
+    const movies = new Movies()
+    const movieSuggestions = await movies.findMovies(links[1])
+    // console.log(movieSuggestions)
 
     console.log('\nSuggestions\n===========')
     console.log(availableDays)
