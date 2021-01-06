@@ -24,7 +24,8 @@ export class Movies {
    */
   constructor (days) {
     this._days = days
-    // this._requestDayIds = []
+    this._requestDayIds = []
+    this._movieOptions = []
     this.suggestions = []
   }
 
@@ -36,14 +37,24 @@ export class Movies {
    */
   async findMovies (url) {
     const page = await SCRAPER.getPageText(url)
-    this._findDayOptionElements(page)
-    // console.log(page)
-  }
 
-  async _findDayOptionElements (page) {
     // Convert the text to a DOM.
     const dom = new JSDOM(page)
 
+    this._extractDayOptions(dom)
+    this._extractMovieOptions(dom)
+
+    console.log(this._requestDayIds)
+    console.log(this.suggestions)
+  }
+
+  /**
+   * Extract Day options from page and add to suggestions.
+   *
+   * @param {object} dom - A DOM representing the cinema page.
+   * @memberof Movies
+   */
+  async _extractDayOptions (dom) {
     // Get all option-elements regarding days.
     const dayOptions = Array.from(dom.window.document.querySelectorAll('#day option'))
 
@@ -56,14 +67,29 @@ export class Movies {
       for (const j of dayOptions) {
         if (j.textContent === element) {
           // Add requestId for the day according to the value attribute.
-          this.suggestions[index].requestDayIds = j.getAttribute('value')
+          this._requestDayIds.push(j.getAttribute('value'))
+          this.suggestions[index].requestDayId = j.getAttribute('value')
         }
       }
     }
-    console.log(this.suggestions)
+  }
+
+  /**
+   * Extract Movie options from page.
+   *
+   * @param {object} dom - A DOM representing the cinema page.
+   * @memberof Movies
+   */
+  async _extractMovieOptions (dom) {
     // Find options of all movies, ignore the first without a value attribute.
     const movieOptions = Array.from(dom.window.document.querySelectorAll('#movie option[value]'))
 
-    console.log(movieOptions)
+    for (const i of movieOptions) {
+      this._movieOptions.push({
+        requestMovieId: i.getAttribute('value'),
+        movieTitle: i.textContent
+      })
+    }
+    console.log(this._movieOptions)
   }
 }
