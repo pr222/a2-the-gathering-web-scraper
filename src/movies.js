@@ -19,23 +19,11 @@ const SCRAPER = new Scraper()
  */
 export class Movies {
   /**
-   * Creates an instance of Movies.
-   *
-   * @param {string[]} days - The days to find movies for.
-   * @memberof Movies
-   */
-  constructor () {
-    // this._days = days
-    // this._requestDayIds = []
-    // this._movieOptions = []
-    // this._suggestions = []
-  }
-
-  /**
    * Find available movies to watch.
    *
    * @param {string} url - For the cinema's webpage.
    * @param {string[]} days - Days to choose movies from.
+   * @returns {object[]} - List with suggested movies.
    * @memberof Movies
    */
   async findMovies (url, days) {
@@ -54,7 +42,9 @@ export class Movies {
     // Do a fetch request to get an array of available movies.
     const movies = await this._fetchForMovies(url, queries)
 
-    console.log(movies)
+    const suggestions = this._addTitle(allMovies, movies)
+
+    return suggestions
   }
 
   /**
@@ -170,5 +160,27 @@ export class Movies {
     }
 
     return sortedMovies
+  }
+
+  /**
+   * Add title property to movies.
+   *
+   * @param {object[]} allMovies - with an id and title.
+   * @param {object[]} movies - to match title for.
+   * @returns {object[]} - movies, with added title.
+   * @memberof Movies
+   */
+  _addTitle (allMovies, movies) {
+    const complementeMovies = movies
+
+    // Go through suggested movies.
+    for (const movie of complementeMovies) {
+      // Go through list of all movies and add title when matched.
+      for (const title of allMovies) {
+        movie.title = title.movieTitle
+      }
+    }
+
+    return complementeMovies
   }
 }
