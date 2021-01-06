@@ -37,47 +37,15 @@ export class Calendar {
   }
 
   /**
-   * Check for available days.
+   * Set the avialable days.
    *
-   * @param {string} url - To the main calendar page.
+   * @param {Array} values - Number of votes for each day.
    * @memberof Calendar
-   * @returns {string[]} - The days that are available.
    */
-  async checkForDays (url) {
-    // Prepare fullpath links for individual calendars
-    // based on the provided url parameter.
-    const fullPathLinks = await this._prepareLinks(url)
-
-    const potentialDays = [0, 0, 0]
-
-    // Work with each link to fill up the potential days.
-    for (const index in fullPathLinks) {
-      // Get the plain text content from the page.
-      const page = await SCRAPER.getPageText(fullPathLinks[index])
-
-      // Convert the text to a DOM.
-      const dom = new JSDOM(page)
-
-      // Make an array from the nodelist with all
-      // td's text content, where the info if the day
-      // is OK or not is.
-      const options = Array.from(dom.window.document.querySelectorAll('td'), option => option.textContent)
-
-      console.log(options)
-      // Check for OKs in the options.
-      for (const i in options) {
-        // If the option has a positive answer, add value to
-        // corresponding index in potentialDays.
-        if (options[i].match(/ok/i)) {
-          potentialDays[i] += 1
-        }
-      }
-    }
-
-    // Finally, check the index and its value
-    // to determine if a day is available and
-    // add the day to available days if so.
-    for (const [index, element] of potentialDays.entries()) {
+  _setAvailableDays (values) {
+    // Determine for each index with its value if a day
+    // should be added to available days.
+    for (const [index, element] of values.entries()) {
       let day
 
       if (index === 0 && element === 3) {
@@ -93,6 +61,30 @@ export class Calendar {
       if (element === 3) {
         this._availableDays.push(day)
       }
+    }
+  }
+
+  /**
+   * Check for available days.
+   *
+   * @param {string} url - To the main calendar page.
+   * @memberof Calendar
+   * @returns {string[]} - The days that are available.
+   */
+  async checkForDays (url) {
+    // Prepare fullpath links for individual calendars
+    // based on the provided url parameter.
+    const fullPathLinks = await this._prepareLinks(url)
+
+    // Go to all links and look for the potential days.
+    const potentialDays = await this._findPotentialDays(fullPathLinks)
+
+    // Set the available days based on the votes for potential days.
+    this._setAvailableDays(potentialDays)
+
+    // Make sure there are any available days before returning.
+    if (this.availableDays.length < 1) {
+      throw new Error('Sorry, there were no possible days for this week.')
     }
 
     return this._availableDays
@@ -122,5 +114,39 @@ export class Calendar {
     })
 
     return fullPathLinks
+  }
+
+  /**
+   * Find all OKs for days when people are available.
+   *
+   * @param {string[]} urls - To visit and look for Oks in.
+   * @returns {Array} - With number of votes for each day.
+   * @memberof Calendar
+   */
+  async _findPotentialDays (urls) {
+    const potentialDays = [0, 0, 0]
+
+    // Work with each link to fill up the potential days.
+    for (const index in urls) {
+      // Get the plain text content from the page.
+      const page = await SCRAPER.getPageText(urls[index])
+
+      // Convert the text to a DOM.
+      const dom = new JSDOM(page)
+
+      // Make an array from the nodelist with all
+      // td's text content, where the info wether
+      // the day is OK or not are.
+      const answerBox = Array.from(dom.window.document.querySelectorAll('td'), option => option.textContent)
+
+      // Check for OKs in the options.
+      for (const i in answerBox) {
+        if (answerBox[i].match(/ok/i)) {
+          potentialDays[i] += 1
+        }
+      }
+    }
+
+    return potentialDays
   }
 }

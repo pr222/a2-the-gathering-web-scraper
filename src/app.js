@@ -30,10 +30,6 @@ const wrapper = async () => {
     // Create a calendar to check for available days.
     const calendar = new Calendar()
     const availableDays = await calendar.checkForDays(links[0])
-
-    if (availableDays.length < 1) {
-      throw new Error('Sorry, there were no possible days for this week.')
-    }
     console.log('Scraping available days...OK')
 
     // Check movies.
