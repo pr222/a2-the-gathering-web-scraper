@@ -24,97 +24,106 @@ export class Movies {
    * @param {string[]} days - The days to find movies for.
    * @memberof Movies
    */
-  constructor (days) {
-    this._days = days
-    this._requestDayIds = []
-    this._movieOptions = []
-    this.suggestions = []
+  constructor () {
+    // this._days = days
+    // this._requestDayIds = []
+    // this._movieOptions = []
+    // this._suggestions = []
   }
 
   /**
    * Find available movies to watch.
    *
    * @param {string} url - For the cinema's webpage.
+   * @param {string[]} days - Days to choose movies from.
    * @memberof Movies
    */
-  async findMovies (url) {
+  async findMovies (url, days) {
     const page = await SCRAPER.getPageText(url)
 
     // Convert the text to a DOM.
     const dom = new JSDOM(page)
 
-    // Get information of days and movies that's on the webpage.
-    this._extractDayOptions(dom)
-    this._extractMovieOptions(dom)
+    // Get information from the page's option elements.
+    const dayIds = await this._extractDayOptions(dom, days)
+    const allMovies = await this._extractMovieOptions(dom)
 
     // Create an array of Query strings to use.
-    const queries = this._generateQuerystrings()
+    const queries = this._generateQuerystrings(dayIds, allMovies)
 
     // Do a fetch request to get an array of available movies.
-    const moviesToSort = await this._fetchForMovies(url, queries)
+    const movies = await this._fetchForMovies(url, queries)
 
-    console.log(moviesToSort)
+    console.log(movies)
   }
 
   /**
-   * Extract Day options from page and add to suggestions.
+   * Match options from page with days to get ids for the days.
    *
    * @param {object} dom - A DOM representing the cinema page.
+   * @param {string[]} days - The days to find.
+   * @returns {string[]} - Id's for the days on the page.
    * @memberof Movies
    */
-  async _extractDayOptions (dom) {
+  async _extractDayOptions (dom, days) {
+    const dayIds = []
     // Get all option-elements regarding days.
     const dayOptions = Array.from(dom.window.document.querySelectorAll('#day option'))
 
     // Find the corresponding number in the value attribute for each day.
-    for (const [index, element] of this._days.entries()) {
-      // Add object with the day to suggestions.
-      this.suggestions.push({ day: element })
-
+    for (const day of days) {
       // Match together option and days with their sting values.
-      for (const j of dayOptions) {
-        if (j.textContent === element) {
+      for (const element of dayOptions) {
+        if (element.textContent === day) {
           // Add requestId for the day according to the value attribute.
-          this._requestDayIds.push(j.getAttribute('value'))
-          this.suggestions[index].requestDayId = j.getAttribute('value')
+          dayIds.push(element.getAttribute('value'))
         }
       }
     }
+
+    return dayIds
   }
 
   /**
-   * Extract Movie options from page.
+   * Extract movie options from page to get all current movies.
    *
    * @param {object} dom - A DOM representing the cinema page.
+   * @returns {object[]} - All movies that are showing this week.
    * @memberof Movies
    */
   async _extractMovieOptions (dom) {
     // Find options of all movies, ignore the first without a value attribute.
     const movieOptions = Array.from(dom.window.document.querySelectorAll('#movie option[value]'))
 
+    const allMovies = []
+
     for (const i of movieOptions) {
-      this._movieOptions.push({
+      allMovies.push({
         requestMovieId: i.getAttribute('value'),
         movieTitle: i.textContent
       })
     }
+
+    return allMovies
   }
 
   /**
-   * Generate querysting for page requests.
+   * Generate query stings for get requests.
    *
-   * @returns {string[]} - query strings to add to url.
+   * @param {string[]} dayIds - for each day to get a query for.
+   * @param {object[]} allMovies - to combine with days.
+   * @returns {string[]} - all query string combinations.
    * @memberof Movies
    */
-  _generateQuerystrings () {
+  _generateQuerystrings (dayIds, allMovies) {
     let day, movie
     const queries = []
 
-    for (const id of this._requestDayIds) {
+    for (const id of dayIds) {
       day = id
 
-      for (const id in this._movieOptions) {
-        movie = this._movieOptions[id].requestMovieId
+      for (const id in allMovies) {
+        movie = allMovies[id].requestMovieId
 
         queries.push(`/check?day=${day}&movie=${movie}`)
       }
@@ -124,11 +133,11 @@ export class Movies {
   }
 
   /**
-   * Fetch for getting all movies.
+   * Fetch for getting all available movies.
    *
    * @param {string} url - should be the main URL of the page.
    * @param {string} queries - the query to add to the URL.
-   * @returns {object[]} - Array with all movies as objects.
+   * @returns {object[]} - Movies with available tickets.
    * @memberof Movies
    */
   async _fetchForMovies (url, queries) {
@@ -148,9 +157,18 @@ export class Movies {
         throw new Error(`Something went wrong when trying to get available movies: ${response.status}`)
       }
     }
-    // Flatten array before returning it.
+    // Flatten array.
     queriedMovies = queriedMovies.flat()
 
-    return queriedMovies
+    // Only interested in movies with status 1,
+    // then there are still available tickets.
+    const sortedMovies = []
+    for (const movie of queriedMovies) {
+      if (movie.status === 1) {
+        sortedMovies.push(movie)
+      }
+    }
+
+    return sortedMovies
   }
 }
