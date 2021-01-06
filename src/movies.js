@@ -6,6 +6,8 @@
  */
 import { Scraper } from './scraper.js'
 import jsdom from 'jsdom'
+import fetch from 'node-fetch'
+
 const { JSDOM } = jsdom
 const SCRAPER = new Scraper()
 
@@ -41,11 +43,17 @@ export class Movies {
     // Convert the text to a DOM.
     const dom = new JSDOM(page)
 
+    // Get information of days and movies that's on the webpage.
     this._extractDayOptions(dom)
     this._extractMovieOptions(dom)
 
-    console.log(this._requestDayIds)
-    console.log(this.suggestions)
+    // Create an array of Query strings to use.
+    const queries = this._generateQuerystrings()
+
+    // Do a fetch request to get an array of available movies.
+    const moviesToSort = await this._fetchForMovies(url, queries)
+
+    console.log(moviesToSort)
   }
 
   /**
@@ -90,6 +98,59 @@ export class Movies {
         movieTitle: i.textContent
       })
     }
-    console.log(this._movieOptions)
+  }
+
+  /**
+   * Generate querysting for page requests.
+   *
+   * @returns {string[]} - query strings to add to url.
+   * @memberof Movies
+   */
+  _generateQuerystrings () {
+    let day, movie
+    const queries = []
+
+    for (const id of this._requestDayIds) {
+      day = id
+
+      for (const id in this._movieOptions) {
+        movie = this._movieOptions[id].requestMovieId
+
+        queries.push(`/check?day=${day}&movie=${movie}`)
+      }
+    }
+
+    return queries
+  }
+
+  /**
+   * Fetch for getting all movies.
+   *
+   * @param {string} url - should be the main URL of the page.
+   * @param {string} queries - the query to add to the URL.
+   * @returns {object[]} - Array with all movies as objects.
+   * @memberof Movies
+   */
+  async _fetchForMovies (url, queries) {
+    let queriedMovies = []
+
+    for (const query of queries) {
+      // Make the fetch request.
+      const response = await fetch(`${url}${query}`)
+
+      // Just to be sure, check the status.
+      if (response.ok) {
+        // Convert body from JSON and add to array.
+        const body = await response.json()
+
+        queriedMovies.push(body)
+      } else {
+        throw new Error(`Something went wrong when trying to get available movies: ${response.status}`)
+      }
+    }
+    // Flatten array before returning it.
+    queriedMovies = queriedMovies.flat()
+
+    return queriedMovies
   }
 }
