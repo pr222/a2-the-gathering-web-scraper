@@ -34,7 +34,7 @@ const wrapper = async () => {
     console.log('Scraping available days...OK')
 
     // Check movies.
-    const movies = new Movies()
+    const movies = new Movies(availableDays)
     const movieSuggestions = await movies.findMovies(links[1])
     // console.log(movieSuggestions)
 
