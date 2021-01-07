@@ -9,6 +9,7 @@ import { Scraper } from './scraper.js'
 import { Calendar } from './calendar.js'
 import { Movies } from './movies.js'
 import { Restaurant } from './restaurant.js'
+import { composeSuggestion } from './compose-suggestions.js'
 
 /**
  * Wrapper for running the main application asyncronously.
@@ -42,10 +43,13 @@ const wrapper = async () => {
     // Find suitable tables in restaurant after the movies.
     const tables = new Restaurant()
     const tableSuggestions = await tables.findTables(links[2], movieSuggestions)
-    console.log(tableSuggestions)
+    console.log('Scraping possible reservations...OK')
+
+    // Compose suggestions out of scraped information.
+    const suggestion = composeSuggestion(movieSuggestions, tableSuggestions)
 
     console.log('\nSuggestions\n===========')
-    // console.log(movieSuggestions)
+    console.log(suggestion)
   } catch (err) {
     console.error(err)
   }

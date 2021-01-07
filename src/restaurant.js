@@ -38,14 +38,41 @@ export class Restaurant {
   }
 
   /**
-   * Find suggestions for tables to book after movies.
+   * Set information of all tables into an object.
    *
-   * @param {string} url - to the restaurant's login page.
-   * @param {object[]} movies - to watch before eating.
-   * @returns {object} -
+   * @param {string[]} values - strings with information to set.
    * @memberof Restaurant
    */
-  async findTables (url, movies) {
+  _setTables (values) {
+    // Extraxt infromation from the strings to create an object for each table.
+    for (const value of values) {
+      const tableInfo = {
+        day: value.slice(0, 3),
+        tableStart: value.slice(3, 5),
+        tableEnd: value.slice(5, 7)
+      }
+
+      // Convert string day names to number-like strings instead.
+      if (tableInfo.day === 'fri') {
+        tableInfo.day = '05'
+      } else if (tableInfo.day === 'sat') {
+        tableInfo.day = '06'
+      } else if (tableInfo.day === 'sun') {
+        tableInfo.day = '07'
+      }
+
+      this._freeTables.push(tableInfo)
+    }
+  }
+
+  /**
+   * Find suggestions for tables to book.
+   *
+   * @param {string} url - to the restaurant's login page.
+   * @returns {object[]} - time information for each available table.
+   * @memberof Restaurant
+   */
+  async findTables (url) {
     // Do a POST request to login to the page.
     const login = await this._postLogin(url)
 
@@ -62,8 +89,13 @@ export class Restaurant {
     const page = await getPage.text()
     const dom = new JSDOM(page)
 
-    const allTables = Array.from(dom.window.document.querySelectorAll('input[type="radio"]'), element => element.value)
-    console.log(allTables)
+    // Find all radio inputs and extract the value attribute
+    // with day and time information about the available table.
+    const tables = Array.from(dom.window.document.querySelectorAll('input[type="radio"]'), element => element.value)
+
+    // Convert the string information into an object for each table.
+    this._setTables(tables)
+
     return this._freeTables
   }
 
