@@ -60,8 +60,26 @@ export class Restaurant {
     // console.log(postLogin)
     console.log(postLogin.url)
     console.log(postLogin.status)
-    console.log(postLogin.cookie)
+    // console.log(postLogin.headers)
+    const cookie = postLogin.headers.get('set-cookie')
+    console.log(cookie)
 
+    const text = await postLogin.text()
+    console.log(text)
+
+    const nextUrl = `${url}login/booking`
+    console.log(nextUrl)
+
+    const getPage = await fetch(`${nextUrl}`, {
+      method: 'GET',
+      headers: {
+        cookie: `${cookie}`
+      }
+    })
+    console.log(getPage.status)
+
+    const page = await getPage.text()
+    console.log(page)
     return this._freeTables
   }
 }
