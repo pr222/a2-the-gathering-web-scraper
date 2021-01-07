@@ -6,6 +6,8 @@
  */
 import fetch from 'node-fetch'
 
+const LOGIN = 'username=zeke&password=coys&submit=login'
+
 /**
  * Class for finding free tables in a restaurant.
  *
@@ -42,44 +44,58 @@ export class Restaurant {
    * @memberof Restaurant
    */
   async findTables (url, movies) {
-    const firstGet = await fetch(url)
-    // console.log(firstGet)
-    console.log(firstGet.status)
-    // console.log(firstGet.cookie)
-    // const cookie = document.cookie
-    // console.log(cookie)
+    // Do a POST request to login to the page.
+    const login = await this._postLogin(url)
 
+    // Take the set-cookie from the response.
+    const cookie = login.headers.get('set-cookie')
+
+    // Prepare url for next request.
+    const nextUrl = `${url}login/booking`
+
+    const tablesPage = await this._getPage(nextUrl, cookie)
+
+    const page = await tablesPage.text()
+    // console.log(page)
+    return this._freeTables
+  }
+
+  /**
+   * Do a POST for login to page.
+   *
+   * @param {string} url - base url of webpage.
+   * @returns {object} - header response object.
+   * @memberof Restaurant
+   */
+  async _postLogin (url) {
     const postLogin = await fetch(`${url}login/`, {
       method: 'POST',
       redirect: 'manual',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: 'username=zeke&password=coys&submit=login'
+      body: `${LOGIN}`
     })
-    // console.log(postLogin)
-    console.log(postLogin.url)
-    console.log(postLogin.status)
-    // console.log(postLogin.headers)
-    const cookie = postLogin.headers.get('set-cookie')
-    console.log(cookie)
 
-    const text = await postLogin.text()
-    console.log(text)
+    return postLogin
+  }
 
-    const nextUrl = `${url}login/booking`
-    console.log(nextUrl)
-
-    const getPage = await fetch(`${nextUrl}`, {
+  /**
+   * Do a GET request for a page.
+   *
+   * @param {string} url - the page to get.
+   * @param {string} cookie - a cookie to include.
+   * @returns {object} - header response object.
+   * @memberof Restaurant
+   */
+  async _getPage (url, cookie) {
+    const getPage = await fetch(`${url}`, {
       method: 'GET',
       headers: {
         cookie: `${cookie}`
       }
     })
-    console.log(getPage.status)
 
-    const page = await getPage.text()
-    console.log(page)
-    return this._freeTables
+    return getPage
   }
 }
