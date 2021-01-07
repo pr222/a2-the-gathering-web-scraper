@@ -5,7 +5,9 @@
  * @version 1.0.0
  */
 import fetch from 'node-fetch'
+import jsdom from 'jsdom'
 
+const { JSDOM } = jsdom
 const LOGIN = 'username=zeke&password=coys&submit=login'
 
 /**
@@ -53,10 +55,15 @@ export class Restaurant {
     // Prepare url for next request.
     const nextUrl = `${url}login/booking`
 
-    const tablesPage = await this._getPage(nextUrl, cookie)
+    // Do a GET request to redirect to page with all table options.
+    const getPage = await this._getPage(nextUrl, cookie)
 
-    const page = await tablesPage.text()
-    // console.log(page)
+    // Convert the response to plain text and make an DOM of it.
+    const page = await getPage.text()
+    const dom = new JSDOM(page)
+
+    const allTables = Array.from(dom.window.document.querySelectorAll('input[type="radio"]'), element => element.value)
+    console.log(allTables)
     return this._freeTables
   }
 
