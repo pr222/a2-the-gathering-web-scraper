@@ -8,6 +8,7 @@ import validator from 'validator'
 import { Scraper } from './scraper.js'
 import { Calendar } from './calendar.js'
 import { Movies } from './movies.js'
+import { Restaurant } from './restaurant.js'
 
 /**
  * Wrapper for running the main application asyncronously.
@@ -38,8 +39,13 @@ const wrapper = async () => {
     const movieSuggestions = await movies.findMovies(links[1], availableDays)
     console.log('Scraping showtimes...OK')
 
+    // Find suitable tables in restaurant after the movies.
+    const tables = new Restaurant()
+    const tableSuggestions = await tables.findTables(links[2], movieSuggestions)
+    console.log(tableSuggestions)
+
     console.log('\nSuggestions\n===========')
-    console.log(movieSuggestions)
+    // console.log(movieSuggestions)
   } catch (err) {
     console.error(err)
   }
