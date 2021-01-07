@@ -12,12 +12,32 @@ const { JSDOM } = jsdom
 const SCRAPER = new Scraper()
 
 /**
- * Class for finding movies.
+ * Class for finding bookable movies.
  *
  * @exports
  * @class Movies
  */
 export class Movies {
+/**
+ * Creates an instance of Movies.
+ *
+ * @memberof Movies
+ */
+  constructor () {
+    this._bookableMovies = []
+  }
+
+  /**
+   * Get the bookable movies.
+   *
+   * @readonly
+   * @memberof Movies
+   * @returns {object[]} - The available days.
+   */
+  get bookableMovies () {
+    return [...this._bookableMovies]
+  }
+
   /**
    * Find available movies to watch.
    *
@@ -42,9 +62,9 @@ export class Movies {
     // Do a fetch request to get an array of available movies.
     const movies = await this._fetchForMovies(url, queries)
 
-    const suggestions = this._addTitle(allMovies, movies)
+    this._bookableMovies = this._addTitle(allMovies, movies)
 
-    return suggestions
+    return this._bookableMovies
   }
 
   /**

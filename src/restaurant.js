@@ -1,0 +1,7 @@
+/**
+ * A module for finding free restaurant tables.
+ *
+ * @author Pauliina Raitaniemi <pr222ja@student.lnu.se>
+ * @version 1.0.0
+ */
+
