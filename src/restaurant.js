@@ -116,6 +116,11 @@ export class Restaurant {
       body: `${LOGIN}`
     })
 
+    // Throw error if not returning the right resonse status.
+    if (postLogin.status !== 302) {
+      throw new Error(`Something went wrong with login: ${postLogin.status}`)
+    }
+
     return postLogin
   }
 
@@ -134,6 +139,11 @@ export class Restaurant {
         cookie: `${cookie}`
       }
     })
+
+    // Throw error if page was not gotten.
+    if (getPage.status !== 200) {
+      throw new Error(`${getPage.status} Sorry, could not get the webpage...`)
+    }
 
     return getPage
   }
