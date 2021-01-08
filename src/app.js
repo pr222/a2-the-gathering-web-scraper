@@ -46,10 +46,12 @@ const wrapper = async () => {
     console.log('Scraping possible reservations...OK')
 
     // Compose suggestions out of scraped information.
-    const suggestion = composeSuggestion(movieSuggestions, tableSuggestions)
+    const suggestions = composeSuggestion(movieSuggestions, tableSuggestions)
 
     console.log('\nSuggestions\n===========')
-    console.log(suggestion)
+    for (const suggestion of suggestions) {
+      console.log(`* On ${suggestion.day}, "${suggestion.movieTitle}" begins at ${suggestion.movieTime}, and there is a free table to book between ${suggestion.tableStart}:00-${suggestion.tableEnd}:00.`)
+    }
   } catch (err) {
     console.error(err)
   }
